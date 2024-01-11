@@ -1,9 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Square from "./components/Square";
+import { Patterns } from "./components/Patterns";
 
 function App() {
   const [board, setBoard] = useState(["", "", "", "", "", "", "", "", ""]);
   const [player, setPlayer] = useState("X");
+  const [result, setResult] = useState({ winner: "none", state: "none" });
+  useEffect(() => {
+    checkWin();
+    checkIfTie();
+    if (player == "X") {
+      setPlayer("O");
+    } else {
+      setPlayer("X");
+    }
+  }, [board]);
+  useEffect(() => {
+    if (result.state != "none") {
+      alert(`Game finished! Winning Player: ${result.winner}`);
+      restartGame();
+    }
+  }, [result]);
   const chooseSquare = (square) => {
     setBoard(
       board.map((value, index) => {
@@ -13,12 +30,37 @@ function App() {
         return value;
       })
     );
-
-    if (player == "X") {
-      setPlayer("O");
-    } else {
-      setPlayer("X");
-    }
+  };
+  const checkWin = (board) => {
+    Patterns.forEach((currPattern) => {
+      const firstPlace = board[currPattern[0]];
+      if (firstPlace == "") return;
+      let foundWinningPattern = true;
+      currPattern.forEach((index) => {
+        if (board[index] != firstPlace || firstPlace == "") {
+          foundWinningPattern = false;
+        }
+      });
+      if (foundWinningPattern) {
+        setResult({ winner: firstPlace, state: "won" });
+      }
+    });
+  };
+  const checkIfTie = () => {
+    let filled = true;
+    board.forEach((square) => {
+      if (square == "") {
+        filled = false;
+      }
+      if (filled) {
+        setResult({ winner: "none", state: "tie" });
+        console.log("tie");
+      }
+    });
+  };
+  const restartGame = () => {
+    setBoard(["", "", "", "", "", "", "", "", ""]);
+    setPlayer("X");
   };
   return (
     <div className="flex">
